@@ -1,0 +1,104 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org"
+      xmlns:sec="http://www.thymeleaf.org/extras/spring-security">
+<head>
+    <meta charset="UTF-8"/>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+    <title>My Bookings – Grand Spice Restaurant</title>
+    <link rel="stylesheet" th:href="@{/css/style.css}"/>
+</head>
+<body>
+
+<nav class="navbar">
+    <a th:href="@{/home}" class="navbar-brand">
+        <div class="logo-icon">🍽️</div>
+        <div><span class="brand-name">Grand Spice</span><span class="brand-sub">Restaurant</span></div>
+    </a>
+    <ul class="nav-links">
+        <li><a th:href="@{/home}">🏠 Home</a></li>
+        <li><a th:href="@{/book}">📅 Book Table</a></li>
+        <li><a th:href="@{/mybookings}" class="active">📋 My Bookings</a></li>
+        <li><a th:href="@{/profile}">👤 Profile</a></li>
+        <li sec:authorize="hasRole('ADMIN')"><a th:href="@{/admin/dashboard}">🛡️ Admin</a></li>
+        <li>
+            <form th:action="@{/logout}" method="post" style="margin:0;">
+                <button type="submit" class="btn btn-logout nav-links a">🚪 Logout</button>
+            </form>
+        </li>
+    </ul>
+</nav>
+
+<div class="page-wrapper">
+    <div class="page-header" style="display:flex; align-items:center; justify-content:space-between;">
+        <div>
+            <h1>📋 My Reservations</h1>
+            <p>Manage and view all your table bookings</p>
+        </div>
+        <a th:href="@{/book}" class="btn btn-primary" style="width:auto;">+ New Booking</a>
+    </div>
+
+    <div class="alert alert-success" th:if="${success}" th:text="${success}"></div>
+
+    <!-- Empty State -->
+    <div class="empty-state" th:if="${#lists.isEmpty(bookings)}">
+        <span class="empty-icon">🍽️</span>
+        <h3>No Reservations Yet</h3>
+        <p>You haven't made any bookings yet. Reserve your first table today!</p>
+        <a th:href="@{/book}" class="btn btn-primary" style="width:auto;">📅 Book a Table Now</a>
+    </div>
+
+    <!-- Booking Cards -->
+    <div class="booking-cards-grid" th:if="${!#lists.isEmpty(bookings)}">
+        <div class="booking-card fade-in" th:each="b : ${bookings}">
+            <div class="booking-card-header">
+                <div class="booking-id">Booking <span th:text="'#GS-' + ${b.id}">ID</span></div>
+                <span class="badge"
+                      th:classappend="${b.status == 'CONFIRMED'} ? 'badge-confirmed' :
+                                     (${b.status == 'PENDING'} ? 'badge-pending' :
+                                     (${b.status == 'REJECTED'} ? 'badge-rejected' : 'badge-cancelled'))"
+                      th:text="${b.status}">Status</span>
+            </div>
+
+            <div class="booking-card-body">
+                <div class="booking-detail">
+                    <div class="icon">📅</div>
+                    <div><span class="label">Date</span><span class="value" th:text="${b.date}">Date</span></div>
+                </div>
+                <div class="booking-detail">
+                    <div class="icon">🕐</div>
+                    <div><span class="label">Time</span><span class="value" th:text="${b.time}">Time</span></div>
+                </div>
+                <div class="booking-detail">
+                    <div class="icon">🪑</div>
+                    <div>
+                        <span class="label">Table</span>
+                        <span class="value" th:text="${b.table.tableNumber} + ' (' + ${b.table.location} + ')'">Table</span>
+                    </div>
+                </div>
+                <div class="booking-detail">
+                    <div class="icon">👥</div>
+                    <div><span class="label">Guests</span><span class="value" th:text="${b.numberOfPeople} + ' people'">2</span></div>
+                </div>
+                <div class="booking-detail" th:if="${b.specialRequest != null and !#strings.isEmpty(b.specialRequest)}">
+                    <div class="icon">💬</div>
+                    <div><span class="label">Special Request</span><span class="value" th:text="${b.specialRequest}">-</span></div>
+                </div>
+            </div>
+
+            <div class="booking-card-footer" style="justify-content:space-between;">
+                <!-- View Receipt -->
+                <a th:href="@{/booking/receipt/{id}(id=${b.id})}" class="btn btn-sm btn-outline">
+                    🧾 View Receipt
+                </a>
+                <!-- Cancel Button -->
+                <form th:if="${b.status == 'PENDING' or b.status == 'CONFIRMED'}"
+                      th:action="@{/cancel/{id}(id=${b.id})}" method="post"
+                      onsubmit="return confirm('Are you sure you want to cancel this booking?')">
+                    <button type="submit" class="btn btn-sm btn-danger">❌ Cancel</button>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+</body>
+</html>

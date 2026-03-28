@@ -1,0 +1,12 @@
+com\restaurant\repository\UserRepository.class
+com\restaurant\RestaurantBookingApplication.class
+com\restaurant\controller\CustomerController.class
+com\restaurant\model\Booking.class
+com\restaurant\config\DataInitializer.class
+com\restaurant\config\SecurityConfig.class
+com\restaurant\model\RestaurantTable.class
+com\restaurant\repository\BookingRepository.class
+com\restaurant\controller\AuthController.class
+com\restaurant\repository\TableRepository.class
+com\restaurant\controller\AdminController.class
+com\restaurant\model\User.class

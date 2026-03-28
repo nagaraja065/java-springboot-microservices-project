@@ -1,0 +1,118 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org"
+      xmlns:sec="http://www.thymeleaf.org/extras/spring-security">
+<head>
+    <meta charset="UTF-8"/>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+    <title>Home – Grand Spice Restaurant</title>
+    <link rel="stylesheet" th:href="@{/css/style.css}"/>
+</head>
+<body>
+
+<!-- NAVBAR -->
+<nav class="navbar">
+    <a th:href="@{/home}" class="navbar-brand">
+        <div class="logo-icon">🍽️</div>
+        <div>
+            <span class="brand-name">Grand Spice</span>
+            <span class="brand-sub">Restaurant</span>
+        </div>
+    </a>
+    <ul class="nav-links">
+        <li><a th:href="@{/home}" class="active">🏠 Home</a></li>
+        <li><a th:href="@{/book}">📅 Book Table</a></li>
+        <li><a th:href="@{/mybookings}">📋 My Bookings</a></li>
+        <li sec:authorize="hasRole('ADMIN')">
+            <a th:href="@{/admin/dashboard}">🛡️ Admin</a>
+        </li>
+        <li>
+            <form th:action="@{/logout}" method="post" style="margin:0;">
+                <button type="submit" class="btn btn-logout nav-links a">🚪 Logout</button>
+            </form>
+        </li>
+    </ul>
+</nav>
+
+<!-- CONTENT -->
+<div class="page-wrapper">
+
+    <!-- Hero Section -->
+    <div class="hero fade-in">
+        <div class="hero-content">
+            <div class="hero-badge">⭐ Premium Dining Experience</div>
+            <h1>Welcome Back,<br/><span th:text="${user.name}">Guest</span>!</h1>
+            <p>Reserve your perfect table, enjoy exquisite cuisine, and create unforgettable memories.</p>
+            <div class="hero-actions">
+                <a th:href="@{/book}" class="btn btn-hero btn-hero-primary">🍴 Book a Table Now</a>
+                <a th:href="@{/mybookings}" class="btn btn-hero btn-hero-outline">📋 View My Bookings</a>
+            </div>
+        </div>
+    </div>
+
+    <!-- Stats -->
+    <div class="stats-grid">
+        <div class="stat-card fade-in">
+            <div class="stat-icon red">📅</div>
+            <div class="stat-info">
+                <h3 th:text="${totalBookings}">0</h3>
+                <p>Total Bookings</p>
+            </div>
+        </div>
+        <div class="stat-card fade-in">
+            <div class="stat-icon green">✅</div>
+            <div class="stat-info">
+                <h3 th:text="${confirmedCount}">0</h3>
+                <p>Confirmed</p>
+            </div>
+        </div>
+        <div class="stat-card fade-in">
+            <div class="stat-icon yellow">⏳</div>
+            <div class="stat-info">
+                <h3 th:text="${pendingCount}">0</h3>
+                <p>Pending Approval</p>
+            </div>
+        </div>
+        <div class="stat-card fade-in">
+            <div class="stat-icon blue">📅</div>
+            <div class="stat-info">
+                <h3 th:text="${today}">Today</h3>
+                <p>Today's Date</p>
+            </div>
+        </div>
+    </div>
+
+    <!-- Features -->
+    <div class="card fade-in">
+        <div class="card-header">
+            <h2>✨ How It Works</h2>
+        </div>
+        <div class="card-body">
+            <div class="stats-grid" style="grid-template-columns: repeat(3, 1fr);">
+                <div class="stat-card" style="flex-direction: column; text-align: center; gap: 1rem;">
+                    <div class="stat-icon blue" style="margin: 0 auto;">📅</div>
+                    <div>
+                        <h3 style="font-size: 1.1rem;">1. Choose Date & Time</h3>
+                        <p>Pick your preferred date, time, and party size</p>
+                    </div>
+                </div>
+                <div class="stat-card" style="flex-direction: column; text-align: center; gap: 1rem;">
+                    <div class="stat-icon red" style="margin: 0 auto;">🍽️</div>
+                    <div>
+                        <h3 style="font-size: 1.1rem;">2. Select Your Table</h3>
+                        <p>Choose from Indoor, Outdoor, Window, or Private tables</p>
+                    </div>
+                </div>
+                <div class="stat-card" style="flex-direction: column; text-align: center; gap: 1rem;">
+                    <div class="stat-icon green" style="margin: 0 auto;">✅</div>
+                    <div>
+                        <h3 style="font-size: 1.1rem;">3. Confirm Booking</h3>
+                        <p>Get instant confirmation and enjoy your dining experience</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+</div>
+</body>
+</html>

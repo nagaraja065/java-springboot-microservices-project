@@ -1,0 +1,122 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8"/>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+    <title>Manage Tables – Admin – Grand Spice Restaurant</title>
+    <link rel="stylesheet" th:href="@{/css/style.css}"/>
+</head>
+<body>
+
+<!-- NAVBAR -->
+<nav class="navbar">
+    <a th:href="@{/home}" class="navbar-brand">
+        <div class="logo-icon">🍽️</div>
+        <div>
+            <span class="brand-name">Grand Spice</span>
+            <span class="brand-sub">Admin Panel</span>
+        </div>
+    </a>
+    <ul class="nav-links">
+        <li><a th:href="@{/admin/dashboard}">📊 Dashboard</a></li>
+        <li><a th:href="@{/admin/bookings}">📋 All Bookings</a></li>
+        <li><a th:href="@{/admin/tables}" class="active">🪑 Manage Tables</a></li>
+        <li><a th:href="@{/home}">👤 Customer View</a></li>
+        <li>
+            <form th:action="@{/logout}" method="post" style="margin:0;">
+                <button type="submit" class="btn btn-logout nav-links a">🚪 Logout</button>
+            </form>
+        </li>
+    </ul>
+</nav>
+
+<div class="page-wrapper">
+    <div class="page-header">
+        <h1>🪑 Manage Tables</h1>
+        <p>Add, remove, or update restaurant tables and their availability</p>
+    </div>
+
+    <!-- Add Table Form -->
+    <div class="add-table-form fade-in">
+        <h3>➕ Add New Table</h3>
+        <form th:action="@{/admin/tables/add}" th:object="${newTable}" method="post">
+            <div class="form-inline">
+                <div class="form-group" style="margin:0;">
+                    <label>Table Number</label>
+                    <input type="text" name="tableNumber" class="form-control"
+                           placeholder="e.g. T9" required/>
+                </div>
+                <div class="form-group" style="margin:0;">
+                    <label>Capacity</label>
+                    <select name="capacity" class="form-control" required>
+                        <option value="">-- Seats --</option>
+                        <option value="2">2 Seats</option>
+                        <option value="4">4 Seats</option>
+                        <option value="6">6 Seats</option>
+                        <option value="8">8 Seats</option>
+                        <option value="10">10 Seats</option>
+                        <option value="12">12 Seats</option>
+                    </select>
+                </div>
+                <div class="form-group" style="margin:0;">
+                    <label>Location</label>
+                    <select name="location" class="form-control" required>
+                        <option value="">-- Location --</option>
+                        <option value="Indoor">Indoor</option>
+                        <option value="Outdoor">Outdoor</option>
+                        <option value="Window">Window</option>
+                        <option value="Private">Private</option>
+                    </select>
+                </div>
+                <button type="submit" class="btn btn-primary" style="margin-top: 1.5rem; width:auto; padding: 0.85rem 2rem;">
+                    ➕ Add Table
+                </button>
+            </div>
+        </form>
+    </div>
+
+    <!-- Tables Grid -->
+    <div class="tables-grid">
+        <div class="table-card fade-in"
+             th:each="t : ${tables}"
+             th:classappend="${!t.available} ? 'unavailable' : ''">
+            <div class="table-num-badge" th:text="${t.tableNumber}">T1</div>
+            <h3 th:text="'Table ' + ${t.tableNumber}">Table T1</h3>
+            <div class="table-meta">
+                <div class="table-meta-item">
+                    👥 <span th:text="${t.capacity} + ' seats'">Seats</span>
+                </div>
+                <div class="table-meta-item">
+                    📍 <span th:text="${t.location}">Location</span>
+                </div>
+            </div>
+            <div style="display:flex; align-items:center; gap:0.5rem; margin-bottom:1.25rem;">
+                <span class="availability-dot"
+                      th:classappend="${t.available} ? 'dot-available' : 'dot-unavailable'"></span>
+                <span style="font-size:0.85rem;"
+                      th:text="${t.available} ? 'Available' : 'Unavailable'"
+                      th:style="${t.available} ? 'color: var(--success)' : 'color: var(--text-subtle)'">
+                    Status
+                </span>
+            </div>
+            <div class="action-btns">
+                <!-- Toggle Availability -->
+                <form th:action="@{/admin/tables/toggle/{id}(id=${t.id})}" method="post">
+                    <button type="submit" class="btn btn-sm"
+                            th:classappend="${t.available} ? 'btn-warning' : 'btn-success'"
+                            th:text="${t.available} ? '🚫 Disable' : '✅ Enable'">
+                        Toggle
+                    </button>
+                </form>
+                <!-- Delete -->
+                <form th:action="@{/admin/tables/delete/{id}(id=${t.id})}" method="post"
+                      onsubmit="return confirm('Delete this table? All bookings for this table may be affected.')">
+                    <button type="submit" class="btn btn-sm btn-danger">🗑️ Delete</button>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+</body>
+</html>

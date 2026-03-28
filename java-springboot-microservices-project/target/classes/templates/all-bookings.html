@@ -1,0 +1,162 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8"/>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+    <title>All Bookings – Admin – Grand Spice Restaurant</title>
+    <link rel="stylesheet" th:href="@{/css/style.css}"/>
+</head>
+<body>
+
+<nav class="navbar">
+    <a th:href="@{/home}" class="navbar-brand">
+        <div class="logo-icon">🍽️</div>
+        <div><span class="brand-name">Grand Spice</span><span class="brand-sub">Admin Panel</span></div>
+    </a>
+    <ul class="nav-links">
+        <li><a th:href="@{/admin/dashboard}">📊 Dashboard</a></li>
+        <li><a th:href="@{/admin/bookings}" class="active">📋 All Bookings</a></li>
+        <li><a th:href="@{/admin/tables}">🪑 Manage Tables</a></li>
+        <li><a th:href="@{/home}">👤 Customer View</a></li>
+        <li>
+            <form th:action="@{/logout}" method="post" style="margin:0;">
+                <button type="submit" class="btn btn-logout nav-links a">🚪 Logout</button>
+            </form>
+        </li>
+    </ul>
+</nav>
+
+<div class="page-wrapper">
+    <div class="page-header" style="display:flex; align-items:center; justify-content:space-between;">
+        <div>
+            <h1>📋 All Bookings</h1>
+            <p>View, search, filter and manage every reservation</p>
+        </div>
+        <a th:href="@{/admin/dashboard}" class="btn btn-outline" style="width:auto;">← Dashboard</a>
+    </div>
+
+    <!-- 🔍 Search & Filter Bar -->
+    <div class="card fade-in" style="margin-bottom:1.5rem;">
+        <div class="card-body" style="padding:1.25rem 1.75rem;">
+            <form th:action="@{/admin/bookings}" method="get">
+                <div style="display:grid; grid-template-columns:2fr 1fr 1.5fr auto; gap:1rem; align-items:end;">
+                    <div class="form-group" style="margin:0;">
+                        <label>🔍 Search Customer / Table</label>
+                        <input type="text" name="search" class="form-control"
+                               placeholder="Name, email or table number..."
+                               th:value="${search}"/>
+                    </div>
+                    <div class="form-group" style="margin:0;">
+                        <label>📌 Status</label>
+                        <select name="status" class="form-control">
+                            <option value="">All Status</option>
+                            <option value="PENDING"   th:selected="${status == 'PENDING'}">⏳ Pending</option>
+                            <option value="CONFIRMED" th:selected="${status == 'CONFIRMED'}">✅ Confirmed</option>
+                            <option value="CANCELLED" th:selected="${status == 'CANCELLED'}">❌ Cancelled</option>
+                            <option value="REJECTED"  th:selected="${status == 'REJECTED'}">🚫 Rejected</option>
+                        </select>
+                    </div>
+                    <div class="form-group" style="margin:0;">
+                        <label>📅 Filter by Date</label>
+                        <input type="date" name="date" class="form-control" th:value="${date}"/>
+                    </div>
+                    <div style="display:flex; gap:0.5rem;">
+                        <button type="submit" class="btn btn-primary" style="width:auto; padding:0.85rem 1.5rem;">
+                            Search
+                        </button>
+                        <a th:href="@{/admin/bookings}" class="btn btn-secondary" style="padding:0.85rem 1rem;">
+                            ✕
+                        </a>
+                    </div>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Results count -->
+    <div style="margin-bottom:1rem; color:var(--text-muted); font-size:0.9rem;"
+         th:if="${totalCount != null}">
+        Showing <strong th:text="${totalCount}" style="color:var(--text-light);">0</strong> booking(s)
+        <span th:if="${status != null and !#strings.isEmpty(status)}">
+            with status <strong th:text="${status}" style="color:var(--accent);">STATUS</strong>
+        </span>
+    </div>
+
+    <!-- Empty State -->
+    <div class="card fade-in" th:if="${#lists.isEmpty(bookings)}">
+        <div class="empty-state">
+            <span class="empty-icon">🔍</span>
+            <h3>No Bookings Found</h3>
+            <p>Try adjusting your search filters.</p>
+            <a th:href="@{/admin/bookings}" class="btn btn-primary" style="width:auto;">Clear Filters</a>
+        </div>
+    </div>
+
+    <!-- Bookings Table -->
+    <div class="card fade-in" th:if="${!#lists.isEmpty(bookings)}">
+        <div class="table-wrapper">
+            <table>
+                <thead>
+                    <tr>
+                        <th>#ID</th>
+                        <th>Customer</th>
+                        <th>Table</th>
+                        <th>Date</th>
+                        <th>Time</th>
+                        <th>Guests</th>
+                        <th>Special Request</th>
+                        <th>Status</th>
+                        <th>Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr th:each="b : ${bookings}">
+                        <td th:text="${b.id}" style="font-weight:700; color:var(--accent);">#</td>
+                        <td>
+                            <div th:text="${b.user.name}" style="font-weight:600;">Name</div>
+                            <div th:text="${b.user.email}" style="font-size:0.78rem; color:var(--text-muted);">email</div>
+                        </td>
+                        <td>
+                            <div th:text="${b.table.tableNumber}" style="font-weight:600;">T1</div>
+                            <div th:text="${b.table.location}" style="font-size:0.78rem; color:var(--accent);">Location</div>
+                        </td>
+                        <td th:text="${b.date}">Date</td>
+                        <td th:text="${b.time}">Time</td>
+                        <td th:text="${b.numberOfPeople} + ' pax'">2</td>
+                        <td style="font-size:0.82rem; color:var(--text-muted); max-width:120px;"
+                            th:text="${b.specialRequest != null and !#strings.isEmpty(b.specialRequest)} ? ${b.specialRequest} : '—'">—</td>
+                        <td>
+                            <span class="badge"
+                                  th:classappend="${b.status == 'CONFIRMED'} ? 'badge-confirmed' :
+                                                 (${b.status == 'PENDING'} ? 'badge-pending' :
+                                                 (${b.status == 'REJECTED'} ? 'badge-rejected' : 'badge-cancelled'))"
+                                  th:text="${b.status}">Status</span>
+                        </td>
+                        <td>
+                            <div class="action-btns">
+                                <form th:if="${b.status == 'PENDING'}"
+                                      th:action="@{/admin/approve/{id}(id=${b.id})}" method="post">
+                                    <button type="submit" class="btn btn-sm btn-success">✅ Approve</button>
+                                </form>
+                                <form th:if="${b.status == 'PENDING' or b.status == 'CONFIRMED'}"
+                                      th:action="@{/admin/reject/{id}(id=${b.id})}" method="post"
+                                      onsubmit="return confirm('Reject this booking?')">
+                                    <button type="submit" class="btn btn-sm btn-danger">❌ Reject</button>
+                                </form>
+                                <form th:if="${b.status == 'REJECTED'}"
+                                      th:action="@{/admin/approve/{id}(id=${b.id})}" method="post">
+                                    <button type="submit" class="btn btn-sm btn-info">↩️ Restore</button>
+                                </form>
+                                <!-- View Receipt -->
+                                <a th:href="@{/admin/booking/{id}(id=${b.id})}"
+                                   class="btn btn-sm btn-outline" title="View Receipt">🧾</a>
+                            </div>
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+</body>
+</html>

@@ -1,0 +1,180 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org"
+      xmlns:sec="http://www.thymeleaf.org/extras/spring-security">
+<head>
+    <meta charset="UTF-8"/>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+    <title>Book a Table – Grand Spice Restaurant</title>
+    <link rel="stylesheet" th:href="@{/css/style.css}"/>
+</head>
+<body>
+
+<!-- NAVBAR -->
+<nav class="navbar">
+    <a th:href="@{/home}" class="navbar-brand">
+        <div class="logo-icon">🍽️</div>
+        <div>
+            <span class="brand-name">Grand Spice</span>
+            <span class="brand-sub">Restaurant</span>
+        </div>
+    </a>
+    <ul class="nav-links">
+        <li><a th:href="@{/home}">🏠 Home</a></li>
+        <li><a th:href="@{/book}" class="active">📅 Book Table</a></li>
+        <li><a th:href="@{/mybookings}">📋 My Bookings</a></li>
+        <li sec:authorize="hasRole('ADMIN')">
+            <a th:href="@{/admin/dashboard}">🛡️ Admin</a>
+        </li>
+        <li>
+            <form th:action="@{/logout}" method="post" style="margin:0;">
+                <button type="submit" class="btn btn-logout nav-links a">🚪 Logout</button>
+            </form>
+        </li>
+    </ul>
+</nav>
+
+<div class="page-wrapper">
+    <div class="page-header">
+        <h1>📅 Reserve Your Table</h1>
+        <p>Fill in the details below to book your perfect dining experience</p>
+    </div>
+
+    <!-- Error alert -->
+    <div class="alert alert-danger" th:if="${error}" th:text="${error}"></div>
+
+    <div class="book-layout">
+        <!-- Booking Form -->
+        <div class="book-form-card fade-in">
+            <h2>Booking Details</h2>
+            <p class="subtitle">All fields are required. We'll confirm your reservation shortly.</p>
+
+            <form th:action="@{/book}" th:object="${booking}" method="post">
+
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="date">📆 Date</label>
+                        <input type="date" id="date" name="date"
+                               class="form-control"
+                               th:min="${#temporals.format(#temporals.createNow(), 'yyyy-MM-dd')}"
+                               required/>
+                    </div>
+                    <div class="form-group">
+                        <label for="time">🕐 Time</label>
+                        <select id="time" name="time" class="form-control" required>
+                            <option value="">-- Select Time --</option>
+                            <option value="12:00">12:00 PM – Lunch</option>
+                            <option value="13:00">1:00 PM – Lunch</option>
+                            <option value="14:00">2:00 PM – Afternoon</option>
+                            <option value="15:00">3:00 PM – Afternoon</option>
+                            <option value="18:00">6:00 PM – Dinner</option>
+                            <option value="19:00">7:00 PM – Dinner</option>
+                            <option value="20:00">8:00 PM – Dinner</option>
+                            <option value="21:00">9:00 PM – Late Dinner</option>
+                        </select>
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label for="numberOfPeople">👥 Number of Guests</label>
+                    <select id="numberOfPeople" name="numberOfPeople" class="form-control" required>
+                        <option value="">-- Select Guest Count --</option>
+                        <option value="1">1 Person</option>
+                        <option value="2">2 People</option>
+                        <option value="3">3 People</option>
+                        <option value="4">4 People</option>
+                        <option value="5">5 People</option>
+                        <option value="6">6 People</option>
+                        <option value="7">7 People</option>
+                        <option value="8">8 People</option>
+                        <option value="9">9 People</option>
+                        <option value="10">10 People</option>
+                    </select>
+                </div>
+
+                <div class="form-group">
+                    <label for="tableId">🪑 Select Table</label>
+                    <select id="tableId" name="table.id" class="form-control" required>
+                        <option value="">-- Choose a Table --</option>
+                        <option th:each="t : ${tables}"
+                                th:value="${t.id}"
+                                th:text="${t.tableNumber} + ' – ' + ${t.location} + ' (' + ${t.capacity} + ' seats max)'">
+                        </option>
+                    </select>
+                </div>
+
+                <div class="form-divider"></div>
+
+                <div class="form-group">
+                    <label for="specialRequest">💬 Special Request (Optional)</label>
+                    <input type="text" id="specialRequest" name="specialRequest"
+                           class="form-control"
+                           placeholder="e.g. Birthday decoration, wheelchair access, window seat..."/>
+                </div>
+
+                <div style="display:flex; gap:1rem; margin-top:1.5rem;">
+                    <button type="submit" class="btn btn-primary" style="flex:1;">
+                        🍴 Confirm Booking
+                    </button>
+                    <a th:href="@{/home}" class="btn btn-secondary" style="flex:0.4;">
+                        Cancel
+                    </a>
+                </div>
+            </form>
+        </div>
+
+        <!-- Sidebar -->
+        <div class="book-sidebar">
+            <!-- Opening Hours -->
+            <div class="info-card fade-in">
+                <h3>🕐 Opening Hours</h3>
+                <div class="booking-detail">
+                    <div class="icon">☀️</div>
+                    <div>
+                        <span class="label">Lunch</span>
+                        <span class="value">12:00 PM – 3:00 PM</span>
+                    </div>
+                </div>
+                <div class="booking-detail">
+                    <div class="icon">🌙</div>
+                    <div>
+                        <span class="label">Dinner</span>
+                        <span class="value">6:00 PM – 10:00 PM</span>
+                    </div>
+                </div>
+                <div class="booking-detail">
+                    <div class="icon">📅</div>
+                    <div>
+                        <span class="label">Days Open</span>
+                        <span class="value">Monday – Sunday</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Table Types -->
+            <div class="info-card fade-in">
+                <h3>🪑 Available Tables</h3>
+                <div th:each="t : ${tables}" class="booking-detail">
+                    <div class="icon">🍽️</div>
+                    <div>
+                        <span class="label" th:text="${t.location}">Location</span>
+                        <span class="value" th:text="${t.tableNumber} + ' · ' + ${t.capacity} + ' seats'">T1</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Note -->
+            <div class="info-card fade-in">
+                <h3>📌 Important Notes</h3>
+                <div style="color: var(--text-muted); font-size: 0.85rem; line-height: 1.8;">
+                    <div>✅ Double booking is automatically prevented</div>
+                    <div>⏳ Bookings require admin confirmation</div>
+                    <div>❌ You can cancel pending bookings anytime</div>
+                    <div>📞 For urgent requests, call us directly</div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+</body>
+</html>

@@ -1,0 +1,170 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8"/>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+    <title>Booking Receipt – Grand Spice Restaurant</title>
+    <link rel="stylesheet" th:href="@{/css/style.css}"/>
+    <style>
+        @media print {
+            .navbar, .no-print { display: none !important; }
+            body { background: white !important; color: black !important; }
+            .receipt-card { box-shadow: none !important; border: 1px solid #ccc !important; }
+            .receipt-header { background: #c0392b !important; -webkit-print-color-adjust: exact; }
+        }
+        .receipt-card {
+            max-width: 600px;
+            margin: 2rem auto;
+            background: var(--bg-card);
+            border: 1px solid var(--border);
+            border-radius: var(--radius);
+            overflow: hidden;
+            box-shadow: var(--shadow);
+        }
+        .receipt-header {
+            background: linear-gradient(135deg, var(--primary), var(--accent));
+            padding: 2rem;
+            text-align: center;
+            color: white;
+        }
+        .receipt-header h1 {
+            font-family: 'Playfair Display', serif;
+            font-size: 1.6rem;
+            margin-bottom: 0.3rem;
+        }
+        .receipt-header p { opacity: 0.9; font-size: 0.9rem; }
+        .receipt-body { padding: 2rem; }
+        .receipt-row {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 0.85rem 0;
+            border-bottom: 1px solid var(--border);
+            font-size: 0.92rem;
+        }
+        .receipt-row:last-of-type { border-bottom: none; }
+        .receipt-label { color: var(--text-muted); font-weight: 600; display: flex; align-items: center; gap: 0.5rem; }
+        .receipt-value { font-weight: 700; text-align: right; }
+        .booking-number {
+            text-align: center;
+            padding: 1.25rem;
+            background: var(--bg-card2);
+            border-radius: var(--radius-sm);
+            margin-bottom: 1.5rem;
+            font-size: 0.85rem;
+            color: var(--text-muted);
+        }
+        .booking-number span { font-size: 1.6rem; font-weight: 800; color: var(--accent); display: block; }
+        .receipt-footer {
+            background: var(--bg-card2);
+            padding: 1.25rem 2rem;
+            text-align: center;
+            font-size: 0.82rem;
+            color: var(--text-muted);
+            border-top: 1px solid var(--border);
+        }
+        .status-confirmed { color: #27ae60; }
+        .status-pending   { color: var(--warning); }
+        .status-rejected  { color: var(--danger); }
+        .status-cancelled { color: var(--text-subtle); }
+    </style>
+</head>
+<body>
+
+<nav class="navbar no-print">
+    <a th:href="@{/home}" class="navbar-brand">
+        <div class="logo-icon">🍽️</div>
+        <div><span class="brand-name">Grand Spice</span><span class="brand-sub">Restaurant</span></div>
+    </a>
+    <ul class="nav-links">
+        <li><a th:href="@{/mybookings}">← Back to My Bookings</a></li>
+        <li>
+            <form th:action="@{/logout}" method="post" style="margin:0;">
+                <button type="submit" class="btn btn-logout nav-links a">🚪 Logout</button>
+            </form>
+        </li>
+    </ul>
+</nav>
+
+<div class="page-wrapper" th:if="${booking != null}">
+
+    <div class="receipt-card fade-in">
+        <!-- Header -->
+        <div class="receipt-header">
+            <div style="font-size:2.5rem; margin-bottom:0.5rem;">🍽️</div>
+            <h1>Grand Spice Restaurant</h1>
+            <p>Table Reservation Confirmation</p>
+        </div>
+
+        <!-- Body -->
+        <div class="receipt-body">
+            <!-- Booking Number -->
+            <div class="booking-number">
+                Booking Reference
+                <span th:text="'#GS-' + ${booking.id}">GS-001</span>
+            </div>
+
+            <!-- Status -->
+            <div class="receipt-row">
+                <span class="receipt-label">📌 Status</span>
+                <span class="receipt-value"
+                      th:classappend="${booking.status == 'CONFIRMED'} ? 'status-confirmed' :
+                                      (${booking.status == 'PENDING'} ? 'status-pending' :
+                                      (${booking.status == 'REJECTED'} ? 'status-rejected' : 'status-cancelled'))"
+                      th:text="${booking.status}">Status</span>
+            </div>
+
+            <!-- Customer Info -->
+            <div class="receipt-row">
+                <span class="receipt-label">👤 Guest Name</span>
+                <span class="receipt-value" th:text="${booking.user.name}">Name</span>
+            </div>
+            <div class="receipt-row">
+                <span class="receipt-label">📧 Email</span>
+                <span class="receipt-value" th:text="${booking.user.email}">Email</span>
+            </div>
+
+            <!-- Booking Details -->
+            <div class="receipt-row">
+                <span class="receipt-label">📅 Date</span>
+                <span class="receipt-value" th:text="${booking.date}">Date</span>
+            </div>
+            <div class="receipt-row">
+                <span class="receipt-label">🕐 Time</span>
+                <span class="receipt-value" th:text="${booking.time}">Time</span>
+            </div>
+            <div class="receipt-row">
+                <span class="receipt-label">🪑 Table</span>
+                <span class="receipt-value"
+                      th:text="${booking.table.tableNumber} + ' – ' + ${booking.table.location}">Table</span>
+            </div>
+            <div class="receipt-row">
+                <span class="receipt-label">👥 Guests</span>
+                <span class="receipt-value" th:text="${booking.numberOfPeople} + ' people'">2</span>
+            </div>
+            <div class="receipt-row" th:if="${booking.specialRequest != null and !#strings.isEmpty(booking.specialRequest)}">
+                <span class="receipt-label">💬 Special Request</span>
+                <span class="receipt-value" th:text="${booking.specialRequest}">Request</span>
+            </div>
+
+            <!-- Print & Actions -->
+            <div style="display:flex; gap:1rem; margin-top:1.75rem;" class="no-print">
+                <button onclick="window.print()" class="btn btn-primary" style="flex:1;">
+                    🖨️ Print Receipt
+                </button>
+                <a th:href="@{/mybookings}" class="btn btn-secondary" style="flex:0.6;">
+                    ← Back
+                </a>
+            </div>
+        </div>
+
+        <!-- Footer -->
+        <div class="receipt-footer">
+            <div>Please arrive 10 minutes before your reservation time.</div>
+            <div style="margin-top:0.3rem;">📞 For changes: call us | 📧 info@grandspice.com</div>
+        </div>
+    </div>
+</div>
+
+</body>
+</html>

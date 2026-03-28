@@ -1,0 +1,64 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8"/>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+    <title>Login – Grand Spice Restaurant</title>
+    <meta name="description" content="Login to reserve your table at Grand Spice Restaurant"/>
+    <link rel="stylesheet" th:href="@{/css/style.css}"/>
+</head>
+<body>
+<div class="auth-page">
+    <div class="auth-card fade-in">
+        <div class="auth-logo">
+            <div class="icon">🍽️</div>
+            <h1>Grand Spice</h1>
+            <p>Restaurant Booking System</p>
+        </div>
+
+        <!-- Error Alert -->
+        <div class="alert alert-danger" th:if="${error}" th:text="${error}"></div>
+
+        <!-- Success after register -->
+        <div class="alert alert-success" th:if="${param.registered}">
+            ✅ Account created! Please login below.
+        </div>
+
+        <!-- Logout message -->
+        <div class="alert alert-info" th:if="${message}" th:text="${message}"></div>
+
+        <form th:action="@{/login}" method="post">
+            <div class="form-group">
+                <label for="email">Email Address</label>
+                <input type="email" id="email" name="email"
+                       class="form-control"
+                       placeholder="your@email.com"
+                       required autofocus/>
+            </div>
+
+            <div class="form-group">
+                <label for="password">Password</label>
+                <input type="password" id="password" name="password"
+                       class="form-control"
+                       placeholder="Enter your password"
+                       required/>
+            </div>
+
+            <button type="submit" class="btn btn-primary">
+                🔐 Sign In
+            </button>
+        </form>
+
+        <div class="auth-divider">Demo Credentials</div>
+        <div class="alert alert-info" style="font-size:0.82rem;">
+            <div>🛡️ <strong>Admin:</strong> admin@restaurant.com / admin123</div>
+            <div style="margin-top:0.3rem;">👤 <strong>Customer:</strong> customer@gmail.com / customer123</div>
+        </div>
+
+        <div class="auth-footer">
+            Don't have an account? <a th:href="@{/register}">Register here</a>
+        </div>
+    </div>
+</div>
+</body>
+</html>

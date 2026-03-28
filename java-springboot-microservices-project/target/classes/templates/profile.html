@@ -1,0 +1,141 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org"
+      xmlns:sec="http://www.thymeleaf.org/extras/spring-security">
+<head>
+    <meta charset="UTF-8"/>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+    <title>My Profile – Grand Spice Restaurant</title>
+    <link rel="stylesheet" th:href="@{/css/style.css}"/>
+</head>
+<body>
+
+<nav class="navbar">
+    <a th:href="@{/home}" class="navbar-brand">
+        <div class="logo-icon">🍽️</div>
+        <div><span class="brand-name">Grand Spice</span><span class="brand-sub">Restaurant</span></div>
+    </a>
+    <ul class="nav-links">
+        <li><a th:href="@{/home}">🏠 Home</a></li>
+        <li><a th:href="@{/book}">📅 Book Table</a></li>
+        <li><a th:href="@{/mybookings}">📋 My Bookings</a></li>
+        <li><a th:href="@{/profile}" class="active">👤 Profile</a></li>
+        <li sec:authorize="hasRole('ADMIN')"><a th:href="@{/admin/dashboard}">🛡️ Admin</a></li>
+        <li>
+            <form th:action="@{/logout}" method="post" style="margin:0;">
+                <button type="submit" class="btn btn-logout nav-links a">🚪 Logout</button>
+            </form>
+        </li>
+    </ul>
+</nav>
+
+<div class="page-wrapper">
+    <div class="page-header">
+        <h1>👤 My Profile</h1>
+        <p>View and update your account details</p>
+    </div>
+
+    <div class="alert alert-success" th:if="${param.updated}">✅ Profile updated successfully!</div>
+
+    <div style="display:grid; grid-template-columns: 1fr 1.5fr; gap:2rem; align-items:start;">
+
+        <!-- Profile Card -->
+        <div>
+            <div class="card fade-in" style="text-align:center; padding:2.5rem;">
+                <!-- Avatar -->
+                <div style="width:90px; height:90px; background:linear-gradient(135deg,var(--primary),var(--accent));
+                     border-radius:50%; display:flex; align-items:center; justify-content:center;
+                     font-size:2.5rem; margin:0 auto 1.25rem;">
+                    👤
+                </div>
+                <h2 style="font-family:'Playfair Display',serif; font-size:1.4rem;" th:text="${user.name}">Name</h2>
+                <p style="color:var(--text-muted); margin:0.3rem 0 1.5rem;" th:text="${user.email}">Email</p>
+                <span class="badge"
+                      th:classappend="${user.role == 'ADMIN'} ? 'badge-confirmed' : 'badge-pending'"
+                      th:text="${user.role}">Role</span>
+
+                <div class="form-divider" style="margin:1.5rem 0;"></div>
+
+                <!-- Mini Stats -->
+                <div style="display:grid; grid-template-columns:1fr 1fr; gap:0.75rem; text-align:center;">
+                    <div style="background:var(--bg-card2); border-radius:var(--radius-sm); padding:1rem;">
+                        <div style="font-size:1.5rem; font-weight:700; color:var(--accent);" th:text="${totalBookings}">0</div>
+                        <div style="font-size:0.78rem; color:var(--text-muted);">Total Bookings</div>
+                    </div>
+                    <div style="background:var(--bg-card2); border-radius:var(--radius-sm); padding:1rem;">
+                        <div style="font-size:1.5rem; font-weight:700; color:#27ae60;" th:text="${confirmedCount}">0</div>
+                        <div style="font-size:0.78rem; color:var(--text-muted);">Confirmed</div>
+                    </div>
+                    <div style="background:var(--bg-card2); border-radius:var(--radius-sm); padding:1rem;">
+                        <div style="font-size:1.5rem; font-weight:700; color:var(--warning);" th:text="${pendingCount}">0</div>
+                        <div style="font-size:0.78rem; color:var(--text-muted);">Pending</div>
+                    </div>
+                    <div style="background:var(--bg-card2); border-radius:var(--radius-sm); padding:1rem;">
+                        <div style="font-size:1.5rem; font-weight:700; color:var(--text-subtle);" th:text="${cancelledCount}">0</div>
+                        <div style="font-size:0.78rem; color:var(--text-muted);">Cancelled</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Edit Profile Form -->
+        <div style="display:flex; flex-direction:column; gap:1.5rem;">
+            <div class="card fade-in">
+                <div class="card-header"><h3>✏️ Edit Profile</h3></div>
+                <div class="card-body">
+                    <form th:action="@{/profile/update}" method="post">
+                        <div class="form-group">
+                            <label>Full Name</label>
+                            <input type="text" name="name" class="form-control"
+                                   th:value="${user.name}" required/>
+                        </div>
+                        <div class="form-group">
+                            <label>Email Address</label>
+                            <input type="email" class="form-control"
+                                   th:value="${user.email}" disabled
+                                   style="opacity:0.6; cursor:not-allowed;"/>
+                            <small style="color:var(--text-subtle); font-size:0.78rem;">Email cannot be changed</small>
+                        </div>
+                        <div class="form-divider"></div>
+                        <div class="form-group">
+                            <label>New Password <span style="color:var(--text-subtle); font-weight:400;">(leave blank to keep current)</span></label>
+                            <input type="password" name="newPassword" class="form-control"
+                                   placeholder="Minimum 6 characters" minlength="6"/>
+                        </div>
+                        <button type="submit" class="btn btn-primary" style="width:auto; padding:0.8rem 2rem;">
+                            💾 Save Changes
+                        </button>
+                    </form>
+                </div>
+            </div>
+
+            <!-- Recent Bookings -->
+            <div class="card fade-in" th:if="${!#lists.isEmpty(recentBookings)}">
+                <div class="card-header">
+                    <h3>📋 Recent Bookings</h3>
+                    <a th:href="@{/mybookings}" class="btn btn-sm btn-outline">View All →</a>
+                </div>
+                <div class="table-wrapper">
+                    <table>
+                        <thead><tr><th>Date</th><th>Table</th><th>Guests</th><th>Status</th></tr></thead>
+                        <tbody>
+                            <tr th:each="b : ${recentBookings}">
+                                <td th:text="${b.date}">Date</td>
+                                <td th:text="${b.table.tableNumber}">T1</td>
+                                <td th:text="${b.numberOfPeople}">2</td>
+                                <td>
+                                    <span class="badge"
+                                          th:classappend="${b.status == 'CONFIRMED'} ? 'badge-confirmed' :
+                                                         (${b.status == 'PENDING'} ? 'badge-pending' :
+                                                         (${b.status == 'REJECTED'} ? 'badge-rejected' : 'badge-cancelled'))"
+                                          th:text="${b.status}">Status</span>
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+</body>
+</html>

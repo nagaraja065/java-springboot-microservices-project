@@ -1,0 +1,268 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8"/>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+    <title>Admin Dashboard – Grand Spice Restaurant</title>
+    <link rel="stylesheet" th:href="@{/css/style.css}"/>
+</head>
+<body>
+
+<nav class="navbar">
+    <a th:href="@{/admin/dashboard}" class="navbar-brand">
+        <div class="logo-icon">🍽️</div>
+        <div><span class="brand-name">Grand Spice</span><span class="brand-sub">Admin Panel</span></div>
+    </a>
+    <ul class="nav-links">
+        <li><a th:href="@{/admin/dashboard}" class="active">📊 Dashboard</a></li>
+        <li><a th:href="@{/admin/bookings}">📋 All Bookings</a></li>
+        <li><a th:href="@{/admin/tables}">🪑 Tables</a></li>
+        <li><a th:href="@{/home}">👤 Customer View</a></li>
+        <li>
+            <form th:action="@{/logout}" method="post" style="margin:0;">
+                <button type="submit" class="btn btn-logout">🚪 Logout</button>
+            </form>
+        </li>
+    </ul>
+</nav>
+
+<div class="page-wrapper">
+
+    <!-- Header -->
+    <div class="page-header">
+        <h1>📊 Admin Dashboard</h1>
+        <p>Overview of reservations and restaurant activity</p>
+    </div>
+
+    <!-- ── STATS ROW 1 ── -->
+    <div class="stats-grid" style="grid-template-columns: repeat(auto-fit, minmax(180px,1fr)); margin-bottom:1.25rem;">
+        <div class="stat-card">
+            <div class="stat-icon red">📋</div>
+            <div class="stat-info">
+                <h3 th:text="${totalBookings}">0</h3>
+                <p>Total Bookings</p>
+            </div>
+        </div>
+        <div class="stat-card">
+            <div class="stat-icon yellow">⏳</div>
+            <div class="stat-info">
+                <h3 th:text="${pendingCount}">0</h3>
+                <p>Pending</p>
+            </div>
+        </div>
+        <div class="stat-card">
+            <div class="stat-icon green">✅</div>
+            <div class="stat-info">
+                <h3 th:text="${confirmedCount}">0</h3>
+                <p>Confirmed</p>
+            </div>
+        </div>
+        <div class="stat-card">
+            <div class="stat-icon blue">🪑</div>
+            <div class="stat-info">
+                <h3 th:text="${totalTables}">0</h3>
+                <p>Tables</p>
+            </div>
+        </div>
+        <div class="stat-card">
+            <div class="stat-icon purple">👥</div>
+            <div class="stat-info">
+                <h3 th:text="${totalCustomers}">0</h3>
+                <p>Customers</p>
+            </div>
+        </div>
+    </div>
+
+    <!-- Mini cancelled/rejected row -->
+    <div class="admin-stats-mini" style="margin-bottom:2rem;">
+        <div class="mini-stat">
+            <span class="val" style="color:#e74c3c;" th:text="${cancelledCount}">0</span>
+            <span class="lbl">Cancelled</span>
+        </div>
+        <div class="mini-stat">
+            <span class="val" style="color:#7f8c8d;" th:text="${rejectedCount}">0</span>
+            <span class="lbl">Rejected</span>
+        </div>
+        <div class="mini-stat">
+            <span class="val" style="color:#27ae60;" th:text="${todayCount}">0</span>
+            <span class="lbl">Today</span>
+        </div>
+        <div class="mini-stat">
+            <span class="val" style="color:var(--accent);"
+                  th:text="${totalBookings > 0 ? #numbers.formatDecimal(confirmedCount * 100.0 / totalBookings, 1, 0) + '%' : '0%'}">0%</span>
+            <span class="lbl">Confirm Rate</span>
+        </div>
+    </div>
+
+    <!-- ── MAIN GRID ── -->
+    <div class="admin-grid">
+
+        <!-- LEFT COLUMN -->
+        <div style="display:flex; flex-direction:column; gap:1.5rem;">
+
+            <!-- 7-Day Booking Chart -->
+            <div class="card fade-in">
+                <div class="card-header">
+                    <h3>📈 Bookings – Next 7 Days</h3>
+                </div>
+                <div class="chart-wrapper">
+                    <div class="bar-chart">
+                        <div class="bar-group" th:each="i : ${#numbers.sequence(0, chartLabels.size() - 1)}">
+                            <span class="bar-value" th:text="${chartData[i]}">0</span>
+                            <div class="bar"
+                                 th:style="'height:' + (${chartMax} > 0 ? ${chartData[i]} * 100 / ${chartMax} : 0) + '%;'">
+                            </div>
+                            <span class="bar-label" th:text="${chartLabels[i]}">Day</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Today's Bookings Table -->
+            <div class="card fade-in">
+                <div class="card-header">
+                    <h3>📅 Today's Bookings
+                        <span style="color:var(--accent); font-size:0.85rem; font-weight:400; margin-left:0.5rem;"
+                              th:text="'(' + ${todayCount} + ' reservations)'"></span>
+                    </h3>
+                    <a th:href="@{/admin/bookings}" class="btn btn-sm btn-outline">View All →</a>
+                </div>
+                <div th:if="${#lists.isEmpty(todayBookings)}">
+                    <div class="empty-state" style="padding:2rem;">
+                        <span class="empty-icon" style="font-size:2rem;">🗓️</span>
+                        <p style="margin:0;">No bookings scheduled for today.</p>
+                    </div>
+                </div>
+                <div class="table-wrapper" th:if="${!#lists.isEmpty(todayBookings)}">
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>Customer</th>
+                                <th>Table</th>
+                                <th>Time</th>
+                                <th>Guests</th>
+                                <th>Status</th>
+                                <th>Action</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr th:each="b : ${todayBookings}">
+                                <td>
+                                    <div th:text="${b.user.name}" style="font-weight:600;">Name</div>
+                                    <div th:text="${b.user.email}" style="font-size:0.75rem; color:var(--text-muted);">email</div>
+                                </td>
+                                <td th:text="${b.table.tableNumber}">T1</td>
+                                <td th:text="${b.time}">Time</td>
+                                <td th:text="${b.numberOfPeople} + ' pax'">2</td>
+                                <td>
+                                    <span class="badge"
+                                          th:classappend="${b.status == 'CONFIRMED'} ? 'badge-confirmed' :
+                                                         (${b.status == 'PENDING'} ? 'badge-pending' :
+                                                         (${b.status == 'REJECTED'} ? 'badge-rejected' : 'badge-cancelled'))"
+                                          th:text="${b.status}">Status</span>
+                                </td>
+                                <td>
+                                    <div class="action-btns">
+                                        <form th:if="${b.status == 'PENDING'}"
+                                              th:action="@{/admin/approve/{id}(id=${b.id})}" method="post">
+                                            <button type="submit" class="btn btn-sm btn-success">✅</button>
+                                        </form>
+                                        <form th:if="${b.status == 'PENDING' or b.status == 'CONFIRMED'}"
+                                              th:action="@{/admin/reject/{id}(id=${b.id})}" method="post">
+                                            <button type="submit" class="btn btn-sm btn-danger">❌</button>
+                                        </form>
+                                        <a th:href="@{/admin/booking/{id}(id=${b.id})}"
+                                           class="btn btn-sm btn-outline">🧾</a>
+                                    </div>
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+        <!-- RIGHT COLUMN: Quick Actions -->
+        <div>
+            <div class="card fade-in">
+                <div class="card-header"><h3>⚡ Quick Actions</h3></div>
+                <div class="card-body" style="padding:1.25rem;">
+                    <div class="quick-actions">
+                        <a th:href="@{/admin/bookings}" class="quick-action-btn">
+                            <span class="qa-icon">📋</span>
+                            <span>All Bookings</span>
+                        </a>
+                        <a th:href="@{/admin/bookings(status='PENDING')}" class="quick-action-btn">
+                            <span class="qa-icon">⏳</span>
+                            <span>Pending</span>
+                        </a>
+                        <a th:href="@{/admin/tables}" class="quick-action-btn">
+                            <span class="qa-icon">🪑</span>
+                            <span>Manage Tables</span>
+                        </a>
+                        <a th:href="@{/admin/bookings(status='CONFIRMED')}" class="quick-action-btn">
+                            <span class="qa-icon">✅</span>
+                            <span>Confirmed</span>
+                        </a>
+                    </div>
+
+                    <!-- Status Summary Donut-style -->
+                    <div class="form-divider"></div>
+                    <p style="font-size:0.78rem; font-weight:700; text-transform:uppercase;
+                               letter-spacing:0.8px; color:var(--text-muted); margin-bottom:1rem;">
+                        Booking Breakdown
+                    </p>
+                    <div style="display:flex; flex-direction:column; gap:0.6rem;">
+                        <!-- Confirmed bar -->
+                        <div>
+                            <div style="display:flex; justify-content:space-between; font-size:0.8rem; margin-bottom:0.25rem;">
+                                <span style="color:#27ae60;">✅ Confirmed</span>
+                                <span th:text="${confirmedCount}">0</span>
+                            </div>
+                            <div style="background:var(--bg-card2); border-radius:4px; height:6px; overflow:hidden;">
+                                <div style="background:#27ae60; height:100%; border-radius:4px;"
+                                     th:style="'width:' + (${totalBookings} > 0 ? ${confirmedCount * 100 / totalBookings} : 0) + '%;'"></div>
+                            </div>
+                        </div>
+                        <!-- Pending bar -->
+                        <div>
+                            <div style="display:flex; justify-content:space-between; font-size:0.8rem; margin-bottom:0.25rem;">
+                                <span style="color:var(--warning);">⏳ Pending</span>
+                                <span th:text="${pendingCount}">0</span>
+                            </div>
+                            <div style="background:var(--bg-card2); border-radius:4px; height:6px; overflow:hidden;">
+                                <div style="background:var(--warning); height:100%; border-radius:4px;"
+                                     th:style="'width:' + (${totalBookings} > 0 ? ${pendingCount * 100 / totalBookings} : 0) + '%;'"></div>
+                            </div>
+                        </div>
+                        <!-- Cancelled bar -->
+                        <div>
+                            <div style="display:flex; justify-content:space-between; font-size:0.8rem; margin-bottom:0.25rem;">
+                                <span style="color:#7f8c8d;">❌ Cancelled</span>
+                                <span th:text="${cancelledCount}">0</span>
+                            </div>
+                            <div style="background:var(--bg-card2); border-radius:4px; height:6px; overflow:hidden;">
+                                <div style="background:#7f8c8d; height:100%; border-radius:4px;"
+                                     th:style="'width:' + (${totalBookings} > 0 ? ${cancelledCount * 100 / totalBookings} : 0) + '%;'"></div>
+                            </div>
+                        </div>
+                        <!-- Rejected bar -->
+                        <div>
+                            <div style="display:flex; justify-content:space-between; font-size:0.8rem; margin-bottom:0.25rem;">
+                                <span style="color:var(--danger);">🚫 Rejected</span>
+                                <span th:text="${rejectedCount}">0</span>
+                            </div>
+                            <div style="background:var(--bg-card2); border-radius:4px; height:6px; overflow:hidden;">
+                                <div style="background:var(--danger); height:100%; border-radius:4px;"
+                                     th:style="'width:' + (${totalBookings} > 0 ? ${rejectedCount * 100 / totalBookings} : 0) + '%;'"></div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+    </div>
+</div>
+</body>
+</html>
